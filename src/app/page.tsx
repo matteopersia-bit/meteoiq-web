@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getModelForecast } from "./modelsService";
 import {
   Cloud,
   CloudRain,
@@ -71,6 +72,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [modelForecasts, setModelForecasts] = useState<any[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
 
   async function loadWeather(searchCity = city) {
     setLoading(true);
@@ -95,6 +98,20 @@ export default function Home() {
       );
 
       const data = await response.json();
+
+      setModelsLoading(true);
+      try {
+        const models = await getModelForecast(
+          place.latitude,
+          place.longitude
+        );
+        setModelForecasts(models);
+      } catch (error) {
+        console.error("Errore confronto modelli:", error);
+        setModelForecasts([]);
+      } finally {
+        setModelsLoading(false);
+      }
 
       const grouped: Day[] = [];
 
