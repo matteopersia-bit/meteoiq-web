@@ -69,6 +69,8 @@ export default function Home() {
   const [days, setDays] = useState<Day[]>([]);
   const [selectedDay, setSelectedDay] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   async function loadWeather(searchCity = city) {
     setLoading(true);
@@ -142,6 +144,33 @@ export default function Home() {
     loadWeather("Milano");
   }, []);
 
+  useEffect(() => {
+    const text = query.trim();
+
+    if (text.length < 2 || text === city) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+            text
+          )}&count=6&language=it&format=json`
+        );
+
+        const data = await response.json();
+        setSuggestions(data.results ?? []);
+        setShowSuggestions(true);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query, city]);
+
   const currentDay = days[selectedDay];
 
   const maxRain = useMemo(
@@ -180,6 +209,7 @@ export default function Home() {
         <form
           onSubmit={(event) => {
             event.preventDefault();
+            setShowSuggestions(false);
             loadWeather(query);
           }}
           className="mt-6 flex gap-2"
@@ -189,12 +219,57 @@ export default function Home() {
               size={18}
               className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40"
             />
+
             <input
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onFocus={() => {
+                if (suggestions.length > 0) setShowSuggestions(true);
+              }}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setShowSuggestions(true);
+              }}
               className="w-full rounded-2xl border border-white/10 bg-white/10 py-3 pl-11 pr-4 outline-none placeholder:text-white/40 focus:border-sky-400"
-              placeholder="Cerca una città"
+              placeholder="Cerca una località"
+              autoComplete="off"
             />
+
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl">
+                {suggestions.map((place) => (
+                  <button
+                    type="button"
+                    key={`${place.id}-${place.latitude}-${place.longitude}`}
+                    onClick={() => {
+                      setQuery(place.name);
+                      setShowSuggestions(false);
+                      loadWeather(place.name);
+                    }}
+                    className="flex w-full items-center gap-3 border-b border-white/5 px-4 py-3 text-left transition last:border-0 hover:bg-white/10"
+                  >
+                    <MapPin
+                      size={18}
+                      className="shrink-0 text-sky-400"
+                    />
+
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold">
+                        {place.name}
+                      </span>
+
+                      <span className="block truncate text-xs text-white/50">
+                        {[
+                          place.admin1,
+                          place.country,
+                        ]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <button
