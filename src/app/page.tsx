@@ -419,6 +419,68 @@ export default function Home() {
             </section>
 
             <section className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-6">
+              <div className="mb-5">
+                <p className="text-xs font-semibold tracking-widest text-sky-400">
+                  CONFRONTO MODELLI
+                </p>
+                <h2 className="mt-1 text-xl font-bold">
+                  ECMWF · GFS · ICON
+                </h2>
+                <p className="mt-1 text-sm text-white/50">
+                  Confronto delle previsioni per {currentDay.label.toLowerCase()}.
+                </p>
+              </div>
+
+              {modelsLoading ? (
+                <div className="flex items-center gap-3 rounded-2xl bg-black/20 p-4 text-sm text-white/60">
+                  <RefreshCw size={17} className="animate-spin" />
+                  Sto confrontando i modelli…
+                </div>
+              ) : modelForecasts.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {modelForecasts.map((model) => {
+                    const hourIndex = selectedDay * 24;
+                    const hour = model.hours[hourIndex];
+
+                    if (!hour) return null;
+
+                    return (
+                      <div
+                        key={model.shortName}
+                        className="rounded-2xl bg-black/20 p-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold">{model.shortName}</p>
+                          <span className="text-xs text-white/40">
+                            {hour.time.split("T")[1]?.slice(0, 5)}
+                          </span>
+                        </div>
+
+                        <p className="mt-4 text-3xl font-bold">
+                          {Math.round(hour.temperature)}°
+                        </p>
+
+                        <div className="mt-3 flex items-center gap-2 text-sm text-sky-300">
+                          <Droplets size={14} />
+                          {hour.rainProbability}%
+                        </div>
+
+                        <div className="mt-2 flex items-center gap-2 text-xs text-white/40">
+                          <Wind size={13} />
+                          {Math.round(hour.wind)} km/h
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-white/50">
+                  Dati dei modelli non disponibili.
+                </p>
+              )}
+            </section>
+
+            <section className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <div className="flex items-center gap-2">
