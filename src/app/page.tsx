@@ -363,10 +363,26 @@ export default function Home() {
                       : "border-white/10 bg-white/5"
                   }`}
                 >
-                  <p className="text-sm font-semibold">{day.label}</p>
-                  <p className="mt-2 text-xs text-white/50">
-                    {day.min}° — {day.max}°
-                  </p>
+                  <div className="flex flex-col items-center text-center">
+                    {(() => {
+                      const Icon =
+                        weatherInfo[day.hours[12]?.code]?.icon ?? CloudSun;
+
+                      return (
+                        <Icon
+                          size={28}
+                          className="mb-2 text-sky-300"
+                          strokeWidth={1.5}
+                        />
+                      );
+                    })()}
+
+                    <p className="text-sm font-semibold">{day.label}</p>
+
+                    <p className="mt-2 text-xs text-white/50">
+                      {day.min}° — {day.max}°
+                    </p>
+                  </div>
                 </button>
               ))}
             </div>
