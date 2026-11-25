@@ -156,8 +156,13 @@ console.log("DATA LOCALE:", new Date().toLocaleString("it-IT", { timeZone: "Euro
     const groupedByDate = new Map<string, typeof hours>();
 
       for (const hour of hours) {
-        const date = hour.time.slice(0, 10);
-
+        const date = new Intl.DateTimeFormat("sv-SE", {
+  timeZone: "Europe/Rome",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+}).format(new Date(hour.time));
+        
         if (!groupedByDate.has(date)) {
           groupedByDate.set(date, []);
         }
