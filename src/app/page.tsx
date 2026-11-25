@@ -54,31 +54,26 @@ const weatherInfo: Record<number, { label: string; icon: string }> = {
 };
 
 function formatDay(date: string) {
-  const parts = new Intl.DateTimeFormat("en-GB", {
+  const today = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Europe/Rome",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(new Date());
+  }).format(new Date());
 
-  const getPart = (type: string) =>
-    parts.find((p) => p.type === type)!.value;
+  const tomorrowDate = new Date(
+    new Date(`${today}T12:00:00+01:00`).getTime() + 24 * 60 * 60 * 1000
+  );
 
-  const year = Number(getPart("year"));
-  const month = Number(getPart("month"));
-  const day = Number(getPart("day"));
-
-  const today = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-  const tomorrow = new Date(Date.UTC(year, month - 1, day + 1));
-  const tomorrowDate = [
-    tomorrow.getUTCFullYear(),
-    String(tomorrow.getUTCMonth() + 1).padStart(2, "0"),
-    String(tomorrow.getUTCDate()).padStart(2, "0"),
-  ].join("-");
+  const tomorrow = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Rome",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(tomorrowDate);
 
   if (date === today) return "OGGI";
-  if (date === tomorrowDate) return "DOMANI";
+  if (date === tomorrow) return "DOMANI";
 
   return new Date(`${date}T12:00:00`).toLocaleDateString("it-IT", {
     weekday: "short",
