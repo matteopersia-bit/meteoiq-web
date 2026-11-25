@@ -140,6 +140,9 @@ export default function Home() {
 
       const data = await response.json();
 
+      console.log("DATA OPEN-METEO:", data.hourly.time.slice(0, 5));
+console.log("DATA LOCALE:", new Date().toLocaleString("it-IT", { timeZone: "Europe/Rome" }));
+
       const hours: Hour[] = data.hourly.time.map(
         (time: string, index: number) => ({
           time,
