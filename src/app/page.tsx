@@ -54,7 +54,27 @@ const weatherInfo: Record<number, { label: string; icon: string }> = {
 };
 
 function formatDay(date: string, index: number) {
-  if (index === 0) return "OGGI";
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/Rome",
+  });
+
+  const tomorrowDate = new Date(
+    new Date(`${today}T12:00:00`).getTime() + 24 * 60 * 60 * 1000
+  ).toLocaleDateString("en-CA", {
+    timeZone: "Europe/Rome",
+  });
+  
+  if (date === today) return "OGGI";
+  if (date === tomorrowDate) return "DOMANI";
+
+  return new Date(`${date}T12:00:00`).toLocaleDateString("it-IT", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).toUpperCase();
+}
+  if (date === today) return "OGGI";
+  if (date === tomorrowDate) return "DOMANI";
 
   return new Date(`${date}T12:00:00`).toLocaleDateString("it-IT", {
     weekday: "short",
