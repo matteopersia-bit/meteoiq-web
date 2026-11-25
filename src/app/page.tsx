@@ -211,17 +211,32 @@ console.log("DATA LOCALE:", new Date().toLocaleString("it-IT", { timeZone: "Euro
   const currentDay = days[selectedDay];
 
   const currentHour = useMemo(() => {
-    if (!currentDay) return null;
+  const now = new Date();
 
-    const now = new Date();
+  const nowRome = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Rome",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+  }).format(now);
 
-    return (
-      currentDay.hours.find((hour) => {
-        const date = new Date(hour.time);
-        return date.getHours() >= now.getHours();
-      }) ?? currentDay.hours[0]
-    );
-  }, [currentDay]);
+  const todayHours = days.flatMap((day) => day.hours);
+
+  return (
+    todayHours.find((hour) => {
+      const hourRome = new Intl.DateTimeFormat("sv-SE", {
+        timeZone: "Europe/Rome",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+      }).format(new Date(hour.time));
+
+      return hourRome >= nowRome;
+    }) ?? null
+  );
+}, [days]);
 
   const modelSummary = useMemo(() => {
     if (!models.length || !currentDay) return [];
