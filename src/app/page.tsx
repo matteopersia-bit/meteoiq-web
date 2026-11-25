@@ -132,27 +132,36 @@ export default function Home() {
         })
       );
 
-      const grouped: Day[] = [];
+    const groupedByDate = new Map<string, typeof hours>();
 
-      for (let i = 0; i < 7; i++) {
-        const dayHours = hours.slice(i * 24, i * 24 + 24);
+      for (const hour of hours) {
+        const date = hour.time.slice(0, 10);
 
-        if (!dayHours.length) continue;
+        if (!groupedByDate.has(date)) {
+          groupedByDate.set(date, []);
+        }
 
-        grouped.push({
-          date: dayHours[0].time.slice(0, 10),
-          label: formatDay(dayHours[0].time.slice(0, 10), i),
-          min: Math.round(Math.min(...dayHours.map((h) => h.temperature))),
-          max: Math.round(Math.max(...dayHours.map((h) => h.temperature))),
+        groupedByDate.get(date)!.push(hour);
+      }
+
+      const grouped: Day[] = Array.from(groupedByDate.entries())
+        .slice(0, 7)
+        .map(([date, dayHours], i) => ({
+          date,
+          label: formatDay(date, i),
+          min: Math.round(
+            Math.min(...dayHours.map((h) => h.temperature))
+          ),
+          max: Math.round(
+            Math.max(...dayHours.map((h) => h.temperature))
+          ),
           rainProbability: Math.max(
             ...dayHours.map((h) => h.rainProbability)
           ),
           hours: dayHours,
-        });
-      }
+        }));
 
       setDays(grouped);
-
       const modelData = await getModelForecast(
         place.latitude,
         place.longitude
