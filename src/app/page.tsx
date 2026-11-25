@@ -53,17 +53,30 @@ const weatherInfo: Record<number, { label: string; icon: string }> = {
   99: { label: "Temporale intenso", icon: "⛈️" },
 };
 
-function formatDay(date: string, index: number) {
-  const today = new Date().toLocaleDateString("en-CA", {
+function formatDay(date: string) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Rome",
-  });
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
 
-  const tomorrowDate = new Date(
-    new Date(`${today}T12:00:00`).getTime() + 24 * 60 * 60 * 1000
-  ).toLocaleDateString("en-CA", {
-    timeZone: "Europe/Rome",
-  });
-  
+  const getPart = (type: string) =>
+    parts.find((p) => p.type === type)!.value;
+
+  const year = Number(getPart("year"));
+  const month = Number(getPart("month"));
+  const day = Number(getPart("day"));
+
+  const today = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+  const tomorrow = new Date(Date.UTC(year, month - 1, day + 1));
+  const tomorrowDate = [
+    tomorrow.getUTCFullYear(),
+    String(tomorrow.getUTCMonth() + 1).padStart(2, "0"),
+    String(tomorrow.getUTCDate()).padStart(2, "0"),
+  ].join("-");
+
   if (date === today) return "OGGI";
   if (date === tomorrowDate) return "DOMANI";
 
@@ -73,16 +86,6 @@ function formatDay(date: string, index: number) {
     month: "short",
   }).toUpperCase();
 }
-  if (date === today) return "OGGI";
-  if (date === tomorrowDate) return "DOMANI";
-
-  return new Date(`${date}T12:00:00`).toLocaleDateString("it-IT", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  }).toUpperCase();
-}
-
 function formatHour(time: string) {
   return new Date(time).toLocaleTimeString("it-IT", {
     hour: "2-digit",
@@ -171,7 +174,7 @@ console.log("DATA LOCALE:", new Date().toLocaleString("it-IT", { timeZone: "Euro
         .slice(0, 7)
         .map(([date, dayHours], i) => ({
           date,
-          label: formatDay(date, i),
+          label: formatDay(date),
           min: Math.round(
             Math.min(...dayHours.map((h) => h.temperature))
           ),
