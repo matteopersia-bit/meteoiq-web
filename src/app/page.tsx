@@ -93,6 +93,7 @@ export default function Home() {
   const [input, setInput] = useState("Milano");
   const [days, setDays] = useState<Day[]>([]);
   const [models, setModels] = useState<ModelForecast[]>([]);
+  const [weatherTimezone, setWeatherTimezone] = useState("Europe/Rome");
   const [selectedDay, setSelectedDay] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -155,37 +156,52 @@ console.log("DATA LOCALE:", new Date().toLocaleString("it-IT", { timeZone: "Euro
 
     const groupedByDate = new Map<string, typeof hours>();
 
-      for (const hour of hours) {
-        const date = new Intl.DateTimeFormat("sv-SE", {
-  timeZone: "Europe/Rome",
+for (const hour of hours) {
+  const date = hour.time.slice(0, 10);
+
+  if (!groupedByDate.has(date)) {
+    groupedByDate.set(date, []);
+  }
+
+  groupedByDate.get(date)!.push(hour);
+}
+
+     const timezone = data.timezone || "Europe/Rome";
+setWeatherTimezone(timezone);
+
+const today = new Intl.DateTimeFormat("sv-SE", {
+  timeZone: timezone,
   year: "numeric",
   month: "2-digit",
   day: "2-digit",
-}).format(new Date(hour.time));
-        
-        if (!groupedByDate.has(date)) {
-          groupedByDate.set(date, []);
-        }
+}).format(new Date());
 
-        groupedByDate.get(date)!.push(hour);
-      }
+const tomorrow = new Date(
+  new Date(`${today}T12:00:00Z`).getTime() + 86400000
+).toISOString().slice(0, 10);
 
-      const grouped: Day[] = Array.from(groupedByDate.entries())
-        .slice(0, 7)
-        .map(([date, dayHours], i) => ({
-          date,
-          label: formatDay(date),
-          min: Math.round(
-            Math.min(...dayHours.map((h) => h.temperature))
-          ),
-          max: Math.round(
-            Math.max(...dayHours.map((h) => h.temperature))
-          ),
-          rainProbability: Math.max(
-            ...dayHours.map((h) => h.rainProbability)
-          ),
-          hours: dayHours,
-        }));
+const grouped: Day[] = Array.from(groupedByDate.entries())
+  .slice(0, 7)
+  .map(([date, dayHours]) => ({
+    date,
+    label:
+      date === today
+        ? "OGGI"
+        : date === tomorrow
+          ? "DOMANI"
+          : new Date(`${date}T12:00:00Z`)
+              .toLocaleDateString("it-IT", {
+                timeZone: "UTC",
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+              })
+              .toUpperCase(),
+    min: Math.round(Math.min(...dayHours.map((h) => h.temperature))),
+    max: Math.round(Math.max(...dayHours.map((h) => h.temperature))),
+    rainProbability: Math.max(...dayHours.map((h) => h.rainProbability)),
+    hours: dayHours,
+  }));
 
       setDays(grouped);
       const modelData = await getModelForecast(
