@@ -397,7 +397,7 @@ console.log("DATA LOCALE:", new Date().toLocaleString("it-IT", { timeZone: "Euro
                     }`}
                   >
                     <div className="text-[11px] font-semibold tracking-wide text-white/50">
-                      {day.label}
+                     {index === 0 ? "OGGI" : day.label}
                     </div>
 
                     <div className="mt-3 text-2xl">
